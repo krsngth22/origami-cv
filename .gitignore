@@ -1,0 +1,13 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.pt
+*.weights
+*.onnx
+data/raw/
+node_modules/
+.DS_Store
+.ipynb_checkpoints/
+runs/
