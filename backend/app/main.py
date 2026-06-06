@@ -1,8 +1,7 @@
 import os
-import uuid
 import cv2
 import json
-import tempfile
+import httpx
 import numpy as np
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,16 +11,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = FastAPI(
-    title="Origami CV API",
-    description="Converts origami diagram images into step-by-step folding instructions",
-    version="1.0.0"
-)
+app = FastAPI(title="Origami CV Local API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,9 +23,7 @@ app.add_middleware(
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "../../models/best.pt")
 model = YOLO(MODEL_PATH)
 
-@app.get("/")
-def root():
-    return {"status": "ok", "message": "Origami CV API is running"}
+EC2_URL = "http://3.17.6.47:8000"
 
 @app.get("/health")
 def health():
@@ -52,14 +44,14 @@ async def analyze_diagram(file: UploadFile = File(...)):
     results = model(img, conf=0.4)
 
     detections = []
-    img_shape = img.shape
+    img_shape = list(img.shape)
     for r in results:
         for box in r.boxes:
             cls = int(box.cls[0])
             conf = float(box.conf[0])
             x1, y1, x2, y2 = box.xyxy[0].tolist()
             detections.append({
-                "class": model.names[cls],
+                "cls": model.names[cls],
                 "confidence": round(conf, 3),
                 "bbox": [round(x1), round(y1), round(x2), round(y2)]
             })
@@ -67,17 +59,23 @@ async def analyze_diagram(file: UploadFile = File(...)):
     if not detections:
         return JSONResponse(content={
             "status": "no_detections",
-            "message": "No origami symbols detected in this image",
-            "detections": [],
+            "message": "No origami symbols detected",
             "instructions": None
         })
 
-    from backend.app.claude_client import detections_to_instructions
-    instructions = detections_to_instructions(detections, img_shape)
+    async with httpx.AsyncClient(timeout=60) as client:
+        response = await client.post(
+            f"{EC2_URL}/instructions",
+            json={"detections": detections, "image_shape": img_shape}
+        )
+        print(f"EC2 status: {response.status_code}")
+        print(f"EC2 response text: '{response.text[:200]}'")
+        if not response.text:
+            return JSONResponse(content={"status": "error", "message": "EC2 returned empty response"}, status_code=500)
+        result = response.json()
 
     return JSONResponse(content={
         "status": "success",
-        "filename": file.filename,
         "detections": detections,
-        "instructions": instructions
+        "instructions": result.get("instructions")
     })

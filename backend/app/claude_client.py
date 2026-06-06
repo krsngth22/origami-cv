@@ -2,7 +2,7 @@ import os
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=False)
 
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
@@ -20,7 +20,7 @@ def detections_to_instructions(detections: list[dict], image_shape: tuple) -> di
         h_pos = "left" if cx < width/3 else "center" if cx < 2*width/3 else "right"
         v_pos = "top" if cy < height/3 else "middle" if cy < 2*height/3 else "bottom"
 
-        detection_text += f"{i+1}. {d['class']} (confidence: {d['confidence']:.2f}) "
+        detection_text += f"{i+1}. {d['cls']} (confidence: {d['confidence']:.2f}) "
         detection_text += f"at {h_pos}-{v_pos} of image, "
         detection_text += f"size: {w:.0f}x{h:.0f}px\n"
 
