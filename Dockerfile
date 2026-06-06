@@ -4,19 +4,24 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    libgomp1 \
     libgl1 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    python-multipart \
+    anthropic \
+    python-dotenv \
+    opencv-python-headless \
+    "ultralytics==8.0.196" \
+    "torch==2.0.1+cpu" \
+    "torchvision==0.15.2+cpu" \
+    --extra-index-url https://download.pytorch.org/whl/cpu
 
 COPY models/ ./models/
 COPY backend/ ./backend/
-COPY scripts/ ./scripts/
 
 EXPOSE 8000
 
