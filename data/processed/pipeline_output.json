@@ -1,0 +1,112 @@
+{
+  "steps": [
+    {
+      "step_number": 1,
+      "instruction": "Place your square paper flat on the table. Fold the left edge down along the full length of the paper to create a long vertical fold.",
+      "fold_type": "valley-fold",
+      "explanation": "This tall narrow arrow on the left side indicates a long downward or inward fold along the left portion of the paper, establishing the base structure.",
+      "position": "left-top region, spanning a tall area approximately 29x134px"
+    },
+    {
+      "step_number": 2,
+      "instruction": "Fold the paper in half horizontally by bringing the right side over to meet the left side, or push the center section inward.",
+      "fold_type": "valley-fold",
+      "explanation": "The large wide arrow in the center-middle indicates a significant horizontal fold that brings two halves of the paper together, forming the main body shape.",
+      "position": "center-middle of the paper, wide arrow 104x54px"
+    },
+    {
+      "step_number": 3,
+      "instruction": "Fold the top-center point or flap downward at a slight angle.",
+      "fold_type": "valley-fold",
+      "explanation": "This small arrow at the center-top guides you to fold a top flap or corner downward, beginning to shape the top of the model.",
+      "position": "center-top of the paper, small arrow 38x43px"
+    },
+    {
+      "step_number": 4,
+      "instruction": "Fold the top-right corner or edge downward and inward.",
+      "fold_type": "valley-fold",
+      "explanation": "This arrow at the right-top area indicates folding the upper right portion of the paper down, helping to define the right side of the model's shape.",
+      "position": "right-top of the paper, arrow 40x44px"
+    },
+    {
+      "step_number": 5,
+      "instruction": "Fold the right-top edge inward along its length, creating a narrow folded flap on the right side.",
+      "fold_type": "valley-fold",
+      "explanation": "This taller narrow arrow on the right-top indicates folding a slim strip of paper inward along the right edge, helping to taper or define the right side.",
+      "position": "right-top of the paper, tall narrow arrow 23x65px"
+    },
+    {
+      "step_number": 6,
+      "instruction": "Fold another narrow section of the right-top edge inward or behind, similar to the previous step.",
+      "fold_type": "mountain-fold",
+      "explanation": "A second narrow arrow near the right-top suggests folding behind (mountain fold) to create layering or to tuck an edge out of sight for a cleaner look.",
+      "position": "right-top of the paper, narrow arrow 24x64px"
+    },
+    {
+      "step_number": 7,
+      "instruction": "On the left-middle section, gently fold or guide a small flap upward or to the side.",
+      "fold_type": "valley-fold",
+      "explanation": "This small arrow on the left-middle area indicates a minor adjustment fold on the left side of the model, refining the shape.",
+      "position": "left-middle of the paper, small arrow 12x56px"
+    },
+    {
+      "step_number": 8,
+      "instruction": "Fold the top-right small corner or tip downward diagonally.",
+      "fold_type": "valley-fold",
+      "explanation": "This small arrow at the right-top indicates folding a small corner point to create a finished edge or a specific feature of the model.",
+      "position": "right-top of the paper, small arrow 25x39px"
+    },
+    {
+      "step_number": 9,
+      "instruction": "Make a second small fold on the left-middle area, slightly adjusting the flap created in Step 7.",
+      "fold_type": "valley-fold",
+      "explanation": "A second small arrow nearby on the left-middle suggests a follow-up fold to further shape or lock the left-side flap into place.",
+      "position": "left-middle of the paper, small arrow 14x53px"
+    },
+    {
+      "step_number": 10,
+      "instruction": "Make a small fold or tuck on the right-middle area of the model.",
+      "fold_type": "valley-fold",
+      "explanation": "This small arrow on the right-middle indicates a minor fold to shape or secure a flap on the right side of the model.",
+      "position": "right-middle of the paper, small arrow 15x33px"
+    },
+    {
+      "step_number": 11,
+      "instruction": "Using the indicated fold line at the center-top, fold and unfold to create a crease reference mark.",
+      "fold_type": "fold-and-unfold",
+      "explanation": "The detected fold-line symbol indicates a crease guide. Fold along this line and open it back up so the crease remains as a reference for later steps.",
+      "position": "center-top of the paper, fold-line symbol 79x64px"
+    },
+    {
+      "step_number": 12,
+      "instruction": "Fold a small flap in the center-middle area upward or to one side.",
+      "fold_type": "valley-fold",
+      "explanation": "This lower-confidence arrow in the center-middle suggests a secondary fold in the middle of the model, possibly forming a detail or locking layer.",
+      "position": "center-middle of the paper, arrow 42x33px"
+    },
+    {
+      "step_number": 13,
+      "instruction": "At the bottom-right, fold or tuck the lower right corner inward.",
+      "fold_type": "valley-fold",
+      "explanation": "This arrow at the right-bottom area indicates folding the lower-right portion of the model inward to complete or close the base of the model.",
+      "position": "right-bottom of the paper, arrow 55x35px"
+    },
+    {
+      "step_number": 14,
+      "instruction": "Make a wide, shallow horizontal fold across the center of the model.",
+      "fold_type": "valley-fold",
+      "explanation": "This wide but short arrow spanning the center-middle suggests a broad but shallow fold across the full width of the model, possibly flattening or shaping the midsection.",
+      "position": "center-middle of the paper, wide arrow 102x21px"
+    },
+    {
+      "step_number": 15,
+      "instruction": "Make a final small fold in the center-middle to complete and close the model.",
+      "fold_type": "valley-fold",
+      "explanation": "This last arrow in the center-middle area indicates a finishing fold to lock the model's shape in place and complete the design.",
+      "position": "center-middle of the paper, arrow 60x35px"
+    }
+  ],
+  "difficulty": "beginner",
+  "estimated_steps": 15,
+  "notes": "This diagram appears to be a beginner-level model with a moderate number of folds. Many of the lower-confidence arrows (below 0.70) may represent minor adjustment folds or could be noise in the detection. Focus on the high-confidence arrows first (steps 1-6) to establish the main structure, then apply the smaller detail folds. The single fold-line symbol suggests at least one crease-and-unfold step used as a reference guide. Work slowly and crease each fold firmly before moving to the next step."
+}

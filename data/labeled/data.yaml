@@ -1,0 +1,7 @@
+names:
+- arrow
+- fold-line
+nc: 2
+train: /home/thaih/origami-cv/data/labeled/train/images
+val: /home/thaih/origami-cv/data/labeled/valid/images
+test: /home/thaih/origami-cv/data/labeled/test/images
