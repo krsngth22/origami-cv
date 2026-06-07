@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
@@ -41,7 +41,7 @@ function PaperMesh({ step, isAnimating, onAnimationComplete }) {
         onComplete: onAnimationComplete,
       });
     }
-  }, [step, isAnimating]);
+  }, [step, isAnimating, onAnimationComplete]);
 
   if (!geometry) return null;
 
