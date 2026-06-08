@@ -8,7 +8,7 @@ A full-stack AI application that converts origami diagram photos into animated 3
 
 - **App**: https://origami-cv.vercel.app
 - **API Docs**: http://3.17.6.47:8000/docs
-- **Demo Video**: (coming soon)
+- **Demo Video**: https://www.youtube.com/watch?v=0orBzSLKn0s
 
 ---
 
@@ -192,6 +192,13 @@ PyTorch is ~2GB. An EC2 t3.micro has 8GB disk. Running YOLO on EC2 causes disk s
 
 **Why Three.js for visualization?**
 Static text instructions miss the spatial intuition of folding. A 3D paper mesh that animates valley and mountain folds gives users an immediate visual reference for each step.
+
+**Current limitations**
+The Three.js animation is a visual step indicator — the paper mesh rotates to signal 
+step transitions but does not simulate actual fold geometry. Full origami simulation 
+(splitting mesh along fold axes, accumulating fold state) is noted as future work. 
+The core value of the system is in the CV + LLM pipeline that generates the instructions, 
+not the visualization layer.
 
 ---
 
