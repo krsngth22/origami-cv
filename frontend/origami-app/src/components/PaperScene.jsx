@@ -1,63 +1,51 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import gsap from "gsap";
+import { animateFold, resetGeometry } from "../utils/foldEngine";
 
-function PaperMesh({ step, isAnimating, onAnimationComplete }) {
+const PaperMesh = forwardRef(function PaperMesh(_, ref) {
   const meshRef = useRef();
-  const [geometry, setGeometry] = useState(null);
+  const geoRef = useRef();
 
   useEffect(() => {
-    const geo = new THREE.PlaneGeometry(2, 2, 10, 10);
-    setGeometry(geo);
+    const geo = new THREE.PlaneGeometry(2, 2, 24, 24);
+    geoRef.current = geo;
+    if (meshRef.current) meshRef.current.geometry = geo;
   }, []);
 
-  useEffect(() => {
-    if (!meshRef.current || !isAnimating || !step) return;
-
-    const mesh = meshRef.current;
-    const foldType = step.fold_type;
-
-    if (foldType === "valley-fold") {
-      gsap.to(mesh.rotation, {
-        x: mesh.rotation.x + Math.PI / 6,
-        duration: 1.2,
-        ease: "power2.inOut",
-        onComplete: onAnimationComplete,
+  useImperativeHandle(ref, () => ({
+    fold: (instruction, onComplete) => {
+      if (!geoRef.current) return;
+      animateFold({
+        geometry: geoRef.current,
+        foldAxis: instruction.foldAxis,
+        foldPosition: instruction.foldPosition,
+        angle: instruction.angle,
+        duration: instruction.duration,
+        onComplete
       });
-    } else if (foldType === "mountain-fold") {
-      gsap.to(mesh.rotation, {
-        x: mesh.rotation.x - Math.PI / 6,
-        duration: 1.2,
-        ease: "power2.inOut",
-        onComplete: onAnimationComplete,
-      });
-    } else {
-      gsap.to(mesh.rotation, {
-        y: mesh.rotation.y + Math.PI / 8,
-        duration: 1.0,
-        ease: "power2.inOut",
-        onComplete: onAnimationComplete,
-      });
+    },
+    reset: () => {
+      if (!geoRef.current) return;
+      resetGeometry(geoRef.current);
     }
-  }, [step, isAnimating, onAnimationComplete]);
-
-  if (!geometry) return null;
+  }));
 
   return (
-    <mesh ref={meshRef} geometry={geometry}>
+    <mesh ref={meshRef}>
+      <planeGeometry args={[2, 2, 24, 24]} />
       <meshStandardMaterial
-        color="#f0f0e8"
+        color="#f5f0e8"
         side={THREE.DoubleSide}
-        roughness={0.8}
+        roughness={0.6}
         metalness={0.0}
       />
     </mesh>
   );
-}
+});
 
-export default function PaperScene({ currentStep, isAnimating, onAnimationComplete }) {
+export default function PaperScene({ paperRef }) {
   return (
     <Canvas
       camera={{ position: [0, 0, 4], fov: 50 }}
@@ -65,12 +53,8 @@ export default function PaperScene({ currentStep, isAnimating, onAnimationComple
     >
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 5, 5]} intensity={0.8} />
-      <directionalLight position={[-5, -5, -5]} intensity={0.3} />
-      <PaperMesh
-        step={currentStep}
-        isAnimating={isAnimating}
-        onAnimationComplete={onAnimationComplete}
-      />
+      <directionalLight position={[-3, -3, 3]} intensity={0.3} />
+      <PaperMesh ref={paperRef} />
       <OrbitControls enablePan={false} minDistance={2} maxDistance={8} />
       <gridHelper args={[10, 10, "#333", "#222"]} position={[0, -1.5, 0]} />
     </Canvas>
