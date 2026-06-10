@@ -7,6 +7,7 @@ import { animateFold, resetGeometry } from "../utils/foldEngine";
 const PaperMesh = forwardRef(function PaperMesh(_, ref) {
   const meshRef = useRef();
   const geoRef = useRef();
+  const creaseRef = useRef();
 
   useEffect(() => {
     const geo = new THREE.PlaneGeometry(2, 2, 24, 24);
@@ -33,30 +34,62 @@ const PaperMesh = forwardRef(function PaperMesh(_, ref) {
   }));
 
   return (
-    <mesh ref={meshRef}>
-      <planeGeometry args={[2, 2, 24, 24]} />
-      <meshStandardMaterial
-        color="#f5f0e8"
-        side={THREE.DoubleSide}
-        roughness={0.6}
-        metalness={0.0}
-      />
-    </mesh>
+    <group>
+      <mesh ref={meshRef} castShadow receiveShadow>
+        <planeGeometry args={[2, 2, 24, 24]} />
+        <meshStandardMaterial
+          color="#f8f3e8"
+          side={THREE.DoubleSide}
+          roughness={0.85}
+          metalness={0.0}
+        />
+      </mesh>
+      <mesh ref={creaseRef} position={[0, 0, 0.001]}>
+        <planeGeometry args={[2, 2, 24, 24]} />
+        <meshStandardMaterial
+          color="#e8e0d0"
+          side={THREE.DoubleSide}
+          roughness={1.0}
+          metalness={0.0}
+          transparent
+          opacity={0.3}
+          wireframe
+        />
+      </mesh>
+    </group>
   );
 });
 
 export default function PaperScene({ paperRef }) {
   return (
     <Canvas
-      camera={{ position: [0, 0, 4], fov: 50 }}
-      style={{ background: "#1a1a2e" }}
+      camera={{ position: [0, 1.5, 4], fov: 45 }}
+      style={{ background: "#111827" }}
+      shadows
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} />
-      <directionalLight position={[-3, -3, 3]} intensity={0.3} />
+      <color attach="background" args={["#111827"]} />
+      <ambientLight intensity={0.5} />
+      <directionalLight
+        position={[5, 8, 5]}
+        intensity={1.2}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      <directionalLight position={[-4, -2, 3]} intensity={0.4} color="#b0c4ff" />
+      <pointLight position={[0, 0, 3]} intensity={0.3} color="#fff8e7" />
       <PaperMesh ref={paperRef} />
-      <OrbitControls enablePan={false} minDistance={2} maxDistance={8} />
-      <gridHelper args={[10, 10, "#333", "#222"]} position={[0, -1.5, 0]} />
+      <OrbitControls
+        enablePan={false}
+        minDistance={2}
+        maxDistance={8}
+        minPolarAngle={Math.PI / 6}
+        maxPolarAngle={Math.PI * 0.85}
+      />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
+        <planeGeometry args={[20, 20]} />
+        <meshStandardMaterial color="#0f172a" roughness={1} />
+      </mesh>
     </Canvas>
   );
 }

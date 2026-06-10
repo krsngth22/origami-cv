@@ -33,7 +33,17 @@ export default function FoldControls({
             <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
               {currentIndex + 1}
             </span>
-            <span className="text-xs text-blue-300 bg-blue-900/40 px-2 py-1 rounded-full">
+            <span className={`text-xs px-2 py-1 rounded-full ${
+              current.fold_type === 'valley-fold'
+                ? 'text-blue-300 bg-blue-900/40'
+                : current.fold_type === 'mountain-fold'
+                ? 'text-red-300 bg-red-900/40'
+                : current.fold_type === 'fold-unfold'
+                ? 'text-yellow-300 bg-yellow-900/40'
+                : current.fold_type === 'turn-over'
+                ? 'text-purple-300 bg-purple-900/40'
+                : 'text-gray-300 bg-gray-700/40'
+            }`}>
               {current.fold_type}
             </span>
           </div>
@@ -84,6 +94,23 @@ export default function FoldControls({
           </button>
         </div>
       )}
+
+      <div className="border-t border-gray-700 pt-3">
+        <p className="text-xs text-gray-500 mb-2">Fold types</p>
+        <div className="flex flex-col gap-1">
+          {[
+            { type: 'valley-fold', color: 'bg-blue-400', desc: 'Fold toward you' },
+            { type: 'mountain-fold', color: 'bg-red-400', desc: 'Fold away from you' },
+            { type: 'fold-unfold', color: 'bg-yellow-400', desc: 'Fold then unfold' },
+            { type: 'turn-over', color: 'bg-purple-400', desc: 'Flip the paper' },
+          ].map(item => (
+            <div key={item.type} className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${item.color}`} />
+              <span className="text-xs text-gray-400">{item.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
