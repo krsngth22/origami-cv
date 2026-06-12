@@ -9,9 +9,11 @@ export function animateFold({ geometry, foldAxis, foldPosition, angle, duration 
     ? new THREE.Vector3(1, 0, 0)
     : new THREE.Vector3(0, 1, 0);
 
+  const scaledPosition = foldPosition * 1.5;
+
   const pivot = foldAxis === 'x'
-    ? new THREE.Vector3(0, foldPosition, 0)
-    : new THREE.Vector3(foldPosition, 0, 0);
+    ? new THREE.Vector3(0, scaledPosition, 0)
+    : new THREE.Vector3(scaledPosition, 0, 0);
 
   const startPositions = [];
   const movingIndices = [];
@@ -22,7 +24,7 @@ export function animateFold({ geometry, foldAxis, foldPosition, angle, duration 
     const z = posArray[i * 3 + 2];
     startPositions.push(new THREE.Vector3(x, y, z));
     const val = foldAxis === 'x' ? y : x;
-    if (val > foldPosition) movingIndices.push(i);
+    if (val > scaledPosition) movingIndices.push(i);
   }
 
   const progress = { t: 0 };
@@ -51,10 +53,9 @@ export function animateFold({ geometry, foldAxis, foldPosition, angle, duration 
   });
 }
 
-export function resetGeometry(geometry) {
+export function resetGeometry(geometry, size = 3) {
   const posArray = geometry.attributes.position.array;
   const segments = 24;
-  const size = 2;
   let idx = 0;
   for (let iy = 0; iy <= segments; iy++) {
     for (let ix = 0; ix <= segments; ix++) {

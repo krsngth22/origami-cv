@@ -7,10 +7,9 @@ import { animateFold, resetGeometry } from "../utils/foldEngine";
 const PaperMesh = forwardRef(function PaperMesh(_, ref) {
   const meshRef = useRef();
   const geoRef = useRef();
-  const creaseRef = useRef();
 
   useEffect(() => {
-    const geo = new THREE.PlaneGeometry(2, 2, 24, 24);
+    const geo = new THREE.PlaneGeometry(3, 3, 24, 24);
     geoRef.current = geo;
     if (meshRef.current) meshRef.current.geometry = geo;
   }, []);
@@ -29,41 +28,27 @@ const PaperMesh = forwardRef(function PaperMesh(_, ref) {
     },
     reset: () => {
       if (!geoRef.current) return;
-      resetGeometry(geoRef.current);
+      resetGeometry(geoRef.current, 3);
     }
   }));
 
   return (
-    <group>
-      <mesh ref={meshRef} castShadow receiveShadow>
-        <planeGeometry args={[2, 2, 24, 24]} />
-        <meshStandardMaterial
-          color="#f8f3e8"
-          side={THREE.DoubleSide}
-          roughness={0.85}
-          metalness={0.0}
-        />
-      </mesh>
-      <mesh ref={creaseRef} position={[0, 0, 0.001]}>
-        <planeGeometry args={[2, 2, 24, 24]} />
-        <meshStandardMaterial
-          color="#e8e0d0"
-          side={THREE.DoubleSide}
-          roughness={1.0}
-          metalness={0.0}
-          transparent
-          opacity={0.3}
-          wireframe
-        />
-      </mesh>
-    </group>
+    <mesh ref={meshRef} position={[0, 0, 0]} castShadow receiveShadow>
+      <planeGeometry args={[3, 3, 24, 24]} />
+      <meshStandardMaterial
+        color="#f8f3e8"
+        side={THREE.DoubleSide}
+        roughness={0.85}
+        metalness={0.0}
+      />
+    </mesh>
   );
 });
 
 export default function PaperScene({ paperRef }) {
   return (
     <Canvas
-      camera={{ position: [0, 1.5, 4], fov: 45 }}
+      camera={{ position: [0, 0.5, 5], fov: 45 }}
       style={{ background: "#111827" }}
       shadows
     >
@@ -80,13 +65,14 @@ export default function PaperScene({ paperRef }) {
       <pointLight position={[0, 0, 3]} intensity={0.3} color="#fff8e7" />
       <PaperMesh ref={paperRef} />
       <OrbitControls
+        target={[0, 0, 0]}
         enablePan={false}
         minDistance={2}
-        maxDistance={8}
+        maxDistance={10}
         minPolarAngle={Math.PI / 6}
         maxPolarAngle={Math.PI * 0.85}
       />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
         <planeGeometry args={[20, 20]} />
         <meshStandardMaterial color="#0f172a" roughness={1} />
       </mesh>
