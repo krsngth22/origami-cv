@@ -4,14 +4,19 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { animateFold, resetGeometry } from "../utils/foldEngine";
 
-const PaperMesh = forwardRef(function PaperMesh(_, ref) {
-  const meshRef = useRef();
+const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
+  const frontRef = useRef();
+  const backRef = useRef();
   const geoRef = useRef();
+  const geoBackRef = useRef();
 
   useEffect(() => {
     const geo = new THREE.PlaneGeometry(3, 3, 24, 24);
+    const geoBack = new THREE.PlaneGeometry(3, 3, 24, 24);
     geoRef.current = geo;
-    if (meshRef.current) meshRef.current.geometry = geo;
+    geoBackRef.current = geoBack;
+    if (frontRef.current) frontRef.current.geometry = geo;
+    if (backRef.current) backRef.current.geometry = geoBack;
   }, []);
 
   useImperativeHandle(ref, () => ({
@@ -23,29 +28,53 @@ const PaperMesh = forwardRef(function PaperMesh(_, ref) {
         foldPosition: instruction.foldPosition,
         angle: instruction.angle,
         duration: instruction.duration,
-        onComplete
+        onComplete: () => {
+          if (geoBackRef.current) {
+            animateFold({
+              geometry: geoBackRef.current,
+              foldAxis: instruction.foldAxis,
+              foldPosition: instruction.foldPosition,
+              angle: instruction.angle,
+              duration: 0.01,
+              onComplete
+            });
+          } else {
+            onComplete?.();
+          }
+        }
       });
     },
     reset: () => {
-      if (!geoRef.current) return;
-      resetGeometry(geoRef.current, 3);
+      if (geoRef.current) resetGeometry(geoRef.current, 3);
+      if (geoBackRef.current) resetGeometry(geoBackRef.current, 3);
     }
   }));
 
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]} castShadow receiveShadow>
-      <planeGeometry args={[3, 3, 24, 24]} />
-      <meshStandardMaterial
-        color="#f8f3e8"
-        side={THREE.DoubleSide}
-        roughness={0.85}
-        metalness={0.0}
-      />
-    </mesh>
+    <group>
+      <mesh ref={frontRef} castShadow receiveShadow>
+        <planeGeometry args={[3, 3, 24, 24]} />
+        <meshStandardMaterial
+          color={color}
+          side={THREE.FrontSide}
+          roughness={0.8}
+          metalness={0.0}
+        />
+      </mesh>
+      <mesh ref={backRef} castShadow receiveShadow>
+        <planeGeometry args={[3, 3, 24, 24]} />
+        <meshStandardMaterial
+          color="#f8f3e8"
+          side={THREE.BackSide}
+          roughness={0.85}
+          metalness={0.0}
+        />
+      </mesh>
+    </group>
   );
 });
 
-export default function PaperScene({ paperRef }) {
+export default function PaperScene({ paperRef, paperColor }) {
   return (
     <Canvas
       camera={{ position: [0, 0.5, 5], fov: 45 }}
@@ -63,7 +92,7 @@ export default function PaperScene({ paperRef }) {
       />
       <directionalLight position={[-4, -2, 3]} intensity={0.4} color="#b0c4ff" />
       <pointLight position={[0, 0, 3]} intensity={0.3} color="#fff8e7" />
-      <PaperMesh ref={paperRef} />
+      <PaperMesh ref={paperRef} color={paperColor || "#e63946"} />
       <OrbitControls
         target={[0, 0, 0]}
         enablePan={false}

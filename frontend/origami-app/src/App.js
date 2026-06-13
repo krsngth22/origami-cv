@@ -13,6 +13,7 @@ const TABS = [
 ];
 
 export default function App() {
+  const [paperColor, setPaperColor] = useState("#e63946");
   const [activeTab, setActiveTab] = useState("crane");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -94,6 +95,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {activeTab !== "upload" && (
+        <div className="flex items-center gap-2 ml-4">
+          <span className="text-xs text-gray-400">Paper color</span>
+          <input
+            type="color"
+            value={paperColor}
+            onChange={e => {
+              setPaperColor(e.target.value);
+              handleReset();
+            }}
+            className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+          />
+        </div>
+      )}
+      
       <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Origami CV</h1>
@@ -153,7 +169,7 @@ export default function App() {
         </div>
 
         <div className="flex-1">
-          <PaperScene paperRef={paperRef} />
+          <PaperScene paperRef={paperRef} paperColor={paperColor} />
         </div>
       </main>
     </div>
