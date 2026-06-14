@@ -169,7 +169,11 @@ export default function App() {
         </div>
 
         <div className="flex-1">
-          <PaperScene paperRef={paperRef} paperColor={paperColor} />
+          <PaperScene
+            paperRef={paperRef}
+            paperColor={paperColor}
+            cameraTarget={currentSteps?.[currentIndex]?.camera}
+          />
         </div>
       </main>
     </div>

@@ -1,7 +1,8 @@
 import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import gsap from "gsap";
 import { animateFold, resetGeometry } from "../utils/foldEngine";
 
 const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
@@ -54,27 +55,44 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
     <group>
       <mesh ref={frontRef} castShadow receiveShadow>
         <planeGeometry args={[3, 3, 24, 24]} />
-        <meshStandardMaterial
-          color={color}
-          side={THREE.FrontSide}
-          roughness={0.8}
-          metalness={0.0}
-        />
+        <meshStandardMaterial color={color} side={THREE.FrontSide} roughness={0.8} metalness={0.0} />
       </mesh>
       <mesh ref={backRef} castShadow receiveShadow>
         <planeGeometry args={[3, 3, 24, 24]} />
-        <meshStandardMaterial
-          color="#f8f3e8"
-          side={THREE.BackSide}
-          roughness={0.85}
-          metalness={0.0}
-        />
+        <meshStandardMaterial color="#f8f3e8" side={THREE.BackSide} roughness={0.85} metalness={0.0} />
       </mesh>
     </group>
   );
 });
 
-export default function PaperScene({ paperRef, paperColor }) {
+function CameraController({ cameraTarget }) {
+  const { camera, controls } = useThree();
+
+  useEffect(() => {
+    if (!cameraTarget) return;
+    gsap.to(camera.position, {
+      x: cameraTarget.position[0],
+      y: cameraTarget.position[1],
+      z: cameraTarget.position[2],
+      duration: 1.0,
+      ease: "power2.inOut"
+    });
+    if (controls) {
+      gsap.to(controls.target, {
+        x: cameraTarget.target[0],
+        y: cameraTarget.target[1],
+        z: cameraTarget.target[2],
+        duration: 1.0,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+    }
+  }, [cameraTarget, camera, controls]);
+
+  return null;
+}
+
+export default function PaperScene({ paperRef, paperColor, cameraTarget }) {
   return (
     <Canvas
       camera={{ position: [0, 0.5, 5], fov: 45 }}
@@ -93,7 +111,9 @@ export default function PaperScene({ paperRef, paperColor }) {
       <directionalLight position={[-4, -2, 3]} intensity={0.4} color="#b0c4ff" />
       <pointLight position={[0, 0, 3]} intensity={0.3} color="#fff8e7" />
       <PaperMesh ref={paperRef} color={paperColor || "#e63946"} />
+      <CameraController cameraTarget={cameraTarget} />
       <OrbitControls
+        makeDefault
         target={[0, 0, 0]}
         enablePan={false}
         minDistance={2}

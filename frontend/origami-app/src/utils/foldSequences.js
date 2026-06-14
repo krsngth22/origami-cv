@@ -1,3 +1,8 @@
+const DEFAULT_CAMERA = { position: [0, 0.5, 5], target: [0, 0, 0] };
+const CLOSE_CAMERA = { position: [0, 0.3, 3.2], target: [0, 0, 0] };
+const HEAD_CAMERA = { position: [1.5, 1, 2.5], target: [0.8, 0.3, 0] };
+const WING_CAMERA = { position: [0, 1.5, 3.5], target: [0, 0, 0] };
+
 export const CRANE_STEPS = [
   {
     step: 1,
@@ -6,7 +11,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: 0,
     angle: Math.PI * 0.85,
-    duration: 1.2
+    duration: 1.2,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 2,
@@ -15,7 +21,8 @@ export const CRANE_STEPS = [
     foldAxis: "y",
     foldPosition: 0,
     angle: Math.PI * 0.85,
-    duration: 1.2
+    duration: 1.2,
+    camera: CLOSE_CAMERA
   },
   {
     step: 3,
@@ -24,7 +31,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: 0.1,
     angle: -Math.PI * 0.4,
-    duration: 1.4
+    duration: 1.4,
+    camera: CLOSE_CAMERA
   },
   {
     step: 4,
@@ -33,7 +41,8 @@ export const CRANE_STEPS = [
     foldAxis: "y",
     foldPosition: 0.3,
     angle: Math.PI * 0.35,
-    duration: 1.2
+    duration: 1.2,
+    camera: CLOSE_CAMERA
   },
   {
     step: 5,
@@ -42,7 +51,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: 0.4,
     angle: Math.PI * 0.45,
-    duration: 1.0
+    duration: 1.0,
+    camera: CLOSE_CAMERA
   },
   {
     step: 6,
@@ -51,7 +61,8 @@ export const CRANE_STEPS = [
     foldAxis: "y",
     foldPosition: 0.3,
     angle: -Math.PI * 0.35,
-    duration: 1.0
+    duration: 1.0,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 7,
@@ -60,7 +71,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: -0.2,
     angle: Math.PI * 0.45,
-    duration: 1.4
+    duration: 1.4,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 8,
@@ -69,7 +81,8 @@ export const CRANE_STEPS = [
     foldAxis: "y",
     foldPosition: -0.3,
     angle: Math.PI * 0.35,
-    duration: 1.2
+    duration: 1.2,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 9,
@@ -78,7 +91,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: 0.15,
     angle: Math.PI * 0.4,
-    duration: 1.2
+    duration: 1.2,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 10,
@@ -87,7 +101,8 @@ export const CRANE_STEPS = [
     foldAxis: "y",
     foldPosition: 0.6,
     angle: -Math.PI * 0.18,
-    duration: 1.4
+    duration: 1.4,
+    camera: HEAD_CAMERA
   },
   {
     step: 11,
@@ -96,7 +111,8 @@ export const CRANE_STEPS = [
     foldAxis: "x",
     foldPosition: 0,
     angle: -Math.PI * 0.12,
-    duration: 1.6
+    duration: 1.6,
+    camera: WING_CAMERA
   }
 ];
 
@@ -108,7 +124,8 @@ export const BOAT_STEPS = [
     foldAxis: "x",
     foldPosition: 0,
     angle: Math.PI * 0.85,
-    duration: 1.2
+    duration: 1.2,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 2,
@@ -117,7 +134,8 @@ export const BOAT_STEPS = [
     foldAxis: "y",
     foldPosition: 0.35,
     angle: Math.PI * 0.38,
-    duration: 1.2
+    duration: 1.2,
+    camera: CLOSE_CAMERA
   },
   {
     step: 3,
@@ -126,7 +144,8 @@ export const BOAT_STEPS = [
     foldAxis: "x",
     foldPosition: -0.45,
     angle: Math.PI * 0.5,
-    duration: 1.2
+    duration: 1.2,
+    camera: CLOSE_CAMERA
   },
   {
     step: 4,
@@ -135,7 +154,8 @@ export const BOAT_STEPS = [
     foldAxis: "x",
     foldPosition: -0.45,
     angle: Math.PI * 0.5,
-    duration: 1.2
+    duration: 1.2,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 5,
@@ -144,7 +164,8 @@ export const BOAT_STEPS = [
     foldAxis: "y",
     foldPosition: 0,
     angle: -Math.PI * 0.28,
-    duration: 1.4
+    duration: 1.4,
+    camera: DEFAULT_CAMERA
   },
   {
     step: 6,
@@ -153,7 +174,8 @@ export const BOAT_STEPS = [
     foldAxis: "x",
     foldPosition: 0.25,
     angle: Math.PI * 0.45,
-    duration: 1.2
+    duration: 1.2,
+    camera: CLOSE_CAMERA
   },
   {
     step: 7,
@@ -162,6 +184,7 @@ export const BOAT_STEPS = [
     foldAxis: "x",
     foldPosition: 0,
     angle: -Math.PI * 0.3,
-    duration: 1.6
+    duration: 1.6,
+    camera: WING_CAMERA
   }
 ];
