@@ -28,14 +28,21 @@ export default function App() {
     ? BOAT_STEPS
     : null;
 
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
+
   const handleTabChange = useCallback((tabId) => {
-    setActiveTab(tabId);
-    setCurrentIndex(0);
-    setIsAnimating(false);
-    setInstructions(null);
-    setError(null);
-    if (paperRef.current) paperRef.current.reset();
-  }, []);
+    if (tabId === activeTab) return;
+    setIsTabTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(tabId);
+      setCurrentIndex(0);
+      setIsAnimating(false);
+      setInstructions(null);
+      setError(null);
+      if (paperRef.current) paperRef.current.reset();
+      setIsTabTransitioning(false);
+    }, 200);
+  }, [activeTab]);
 
   const handleNext = useCallback(() => {
     if (!currentSteps || isAnimating) return;
@@ -52,21 +59,10 @@ export default function App() {
     if (currentIndex === 0 || isAnimating) return;
     const newIndex = currentIndex - 1;
     setIsAnimating(true);
-    if (paperRef.current) paperRef.current.reset();
-    const stepsToReplay = currentSteps.slice(0, newIndex);
-    let i = 0;
-    const replayNext = () => {
-      if (i >= stepsToReplay.length) {
-        setCurrentIndex(newIndex);
-        setIsAnimating(false);
-        return;
-      }
-      paperRef.current?.fold(
-        { ...stepsToReplay[i], duration: 0.3 },
-        () => { i++; replayNext(); }
-      );
-    };
-    replayNext();
+    paperRef.current?.goToStep(currentSteps, newIndex, () => {
+      setIsAnimating(false);
+      setCurrentIndex(newIndex);
+    });
   }, [currentIndex, isAnimating, currentSteps]);
 
   const handleReset = useCallback(() => {
@@ -134,6 +130,16 @@ export default function App() {
 
       <main className="flex h-[calc(100vh-73px)]">
         <div className="w-80 border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto">
+          {activeTab !== "upload" && (
+            <div className="mb-2">
+              <h2 className="text-lg font-semibold text-white">
+                {activeTab === "crane" ? "🦢 Paper Crane" : "⛵ Paper Boat"}
+              </h2>
+              <p className="text-xs text-gray-500">
+                {activeTab === "crane" ? "Classic 11-step origami crane" : "Classic 7-step origami boat"}
+              </p>
+            </div>
+          )}
           {activeTab === "upload" ? (
             <>
               <ImageUpload onUpload={handleUpload} isLoading={isLoading} />
@@ -168,11 +174,12 @@ export default function App() {
           )}
         </div>
 
-        <div className="flex-1">
+        <div className={`flex-1 transition-opacity duration-200 ${isTabTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           <PaperScene
             paperRef={paperRef}
             paperColor={paperColor}
             cameraTarget={currentSteps?.[currentIndex]?.camera}
+            isAnimating={isAnimating}
           />
         </div>
       </main>

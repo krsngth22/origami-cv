@@ -3,7 +3,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
-import { animateFold, resetGeometry } from "../utils/foldEngine";
+import { animateFold, resetGeometry, animateToStep } from "../utils/foldEngine";
 
 const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
   const frontRef = useRef();
@@ -42,6 +42,24 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
           } else {
             onComplete?.();
           }
+        }
+      });
+    },
+    goToStep: (steps, targetIndex, onComplete) => {
+      if (!geoRef.current || !geoBackRef.current) return;
+      animateToStep({
+        geometry: geoRef.current,
+        steps,
+        targetIndex,
+        duration: 0.6,
+        onComplete: () => {
+          animateToStep({
+            geometry: geoBackRef.current,
+            steps,
+            targetIndex,
+            duration: 0.01,
+            onComplete
+          });
         }
       });
     },
@@ -92,7 +110,7 @@ function CameraController({ cameraTarget }) {
   return null;
 }
 
-export default function PaperScene({ paperRef, paperColor, cameraTarget }) {
+export default function PaperScene({ paperRef, paperColor, cameraTarget, isAnimating }) {
   return (
     <Canvas
       camera={{ position: [0, 0.5, 5], fov: 45 }}
@@ -116,6 +134,7 @@ export default function PaperScene({ paperRef, paperColor, cameraTarget }) {
         makeDefault
         target={[0, 0, 0]}
         enablePan={false}
+        enableRotate={!isAnimating}
         minDistance={2}
         maxDistance={10}
         minPolarAngle={Math.PI / 6}
