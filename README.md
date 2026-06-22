@@ -200,6 +200,14 @@ step transitions but does not simulate actual fold geometry. Full origami simula
 The core value of the system is in the CV + LLM pipeline that generates the instructions, 
 not the visualization layer.
 
+**Pre-defined fold sequences for 3D animation**
+The Crane and Boat tabs use hand-crafted fold sequences — each step defines a fold axis, 
+position, and angle that drives a Three.js geometry transformation. The animation system 
+splits the paper mesh along the fold axis and rotates one half using GSAP quaternion 
+interpolation. Undo works by replaying all previous folds instantly on a reset geometry, 
+then animating only the final unfold. Full shape-accurate simulation for arbitrary uploaded 
+diagrams is noted as future work.
+
 ---
 
 ## Author
