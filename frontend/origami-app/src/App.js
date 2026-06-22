@@ -145,11 +145,7 @@ export default function App() {
           {activeTab === "upload" ? (
             <>
               <ImageUpload onUpload={handleUpload} isLoading={isLoading} />
-              {error && (
-                <div className="bg-red-900/20 border border-red-700/40 rounded-lg p-3">
-                  <p className="text-red-400 text-sm">{error}</p>
-                </div>
-              )}
+              
               {instructions && (
                 <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg p-3">
                   <p className="text-yellow-300 text-xs">
@@ -162,7 +158,7 @@ export default function App() {
                 currentStepIndex={uploadStepIndex}
                 onStepChange={setUploadStepIndex}
                 isAnimating={false}
-                error={error}
+                error={null}
               />
             </>
           ) : (
