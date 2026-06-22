@@ -1,4 +1,5 @@
 # Origami CV — Diagram to 3D Folding Instructions
+![CI](https://github.com/krsngth22/origami-cv/actions/workflows/ci.yml/badge.svg)
 
 A full-stack AI application that converts origami diagram photos into animated 3D step-by-step folding instructions using computer vision and large language models.
 
