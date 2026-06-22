@@ -6,6 +6,32 @@ load_dotenv(override=False)
 
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
+def format_detections_for_prompt(detections, img_shape):
+    """Format detection results as natural language for Claude."""
+    if not detections:
+        return "No symbols detected."
+    
+    height, width = img_shape[:2]
+    lines = []
+    
+    for i, det in enumerate(detections, 1):
+        cls = det.get("cls", "unknown")
+        conf = det.get("confidence", 0)
+        bbox = det.get("bbox", [0, 0, 0, 0])
+        x1, y1, x2, y2 = bbox
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+        w = x2 - x1
+        h = y2 - y1
+        h_pos = "left" if cx < width/3 else "right" if cx > 2*width/3 else "center"
+        v_pos = "top" if cy < height/3 else "bottom" if cy > 2*height/3 else "middle"
+        lines.append(
+            f"{i}. {cls} (confidence: {conf:.2f}) at {h_pos}-{v_pos} of image, "
+            f"size: {int(w)}x{int(h)}px"
+        )
+    
+    return "\n".join(lines)
+
 def detections_to_instructions(detections: list[dict], image_shape: tuple) -> dict:
     height, width = image_shape[:2]
 
