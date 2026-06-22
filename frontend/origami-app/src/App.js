@@ -20,6 +20,7 @@ export default function App() {
   const [instructions, setInstructions] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [uploadStepIndex, setUploadStepIndex] = useState(0);
   const paperRef = useRef();
 
   const currentSteps = activeTab === "crane"
@@ -72,6 +73,7 @@ export default function App() {
   }, []);
 
   const handleUpload = async (file) => {
+    setUploadStepIndex(0);
     setIsLoading(true);
     setError(null);
     setInstructions(null);
@@ -157,8 +159,8 @@ export default function App() {
               )}
               <StepPanel
                 instructions={instructions}
-                currentStepIndex={0}
-                onStepChange={() => {}}
+                currentStepIndex={uploadStepIndex}
+                onStepChange={setUploadStepIndex}
                 isAnimating={false}
                 error={error}
               />
