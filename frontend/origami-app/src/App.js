@@ -128,8 +128,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex h-[calc(100vh-73px)]">
-        <div className="w-80 border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto">
+      <main className="flex flex-col md:flex-row h-[calc(100vh-73px)]">
+        <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto max-h-[45vh] md:max-h-full">
           {activeTab !== "upload" && (
             <div className="mb-2">
               <h2 className="text-lg font-semibold text-white">
@@ -160,6 +160,7 @@ export default function App() {
                 currentStepIndex={0}
                 onStepChange={() => {}}
                 isAnimating={false}
+                error={error}
               />
             </>
           ) : (
@@ -174,7 +175,7 @@ export default function App() {
           )}
         </div>
 
-        <div className={`flex-1 transition-opacity duration-200 ${isTabTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`flex-1 min-h-[55vh] md:min-h-0 transition-opacity duration-200 ${isTabTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           <PaperScene
             paperRef={paperRef}
             paperColor={paperColor}
