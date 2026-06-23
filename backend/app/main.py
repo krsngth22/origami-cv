@@ -1,12 +1,9 @@
 import os
-import cv2
-import json
 import httpx
-import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+import base64
+from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from ultralytics import YOLO
 from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -14,7 +11,8 @@ from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
-app = FastAPI(title="Origami CV Local API", version="1.0.0")
+app = FastAPI(title="Origami CV API", version="2.0.0")
+
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -27,14 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "../../models/best.pt")
-model = YOLO(MODEL_PATH)
-
-EC2_URL = "http://3.17.6.47:8000"
+ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY", "y8CqklhaGLS0Ao0RTtXc")
+ROBOFLOW_URL = "https://detect.roboflow.com/origami-symbols/1"
+EC2_URL = os.getenv("EC2_URL", "http://3.17.6.47:8000")
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "model_loaded": model is not None}
+    return {"status": "healthy", "inference": "roboflow"}
 
 @app.post("/analyze")
 @limiter.limit("10/minute")
@@ -42,57 +39,71 @@ async def analyze_diagram(request: Request, file: UploadFile = File(...)):
     allowed_types = ["image/jpeg", "image/png", "image/webp", "image/bmp"]
     if file.content_type not in allowed_types:
         return JSONResponse(
-            content={"status": "error", "message": f"Invalid file type: {file.content_type}. Please upload an image."},
+            content={"status": "error", "message": f"Invalid file type. Please upload an image."},
             status_code=400
         )
-    
     if file.size and file.size > 10 * 1024 * 1024:
         return JSONResponse(
             content={"status": "error", "message": "File too large. Maximum size is 10MB."},
             status_code=400
         )
 
-    if not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="File must be an image")
-
     contents = await file.read()
-    nparr = np.frombuffer(contents, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    img_base64 = base64.b64encode(contents).decode("utf-8")
 
-    if img is None:
-        raise HTTPException(status_code=400, detail="Could not decode image")
+    # Call Roboflow hosted inference
+    async with httpx.AsyncClient(timeout=30) as client:
+        rf_response = await client.post(
+            f"{ROBOFLOW_URL}?api_key={ROBOFLOW_API_KEY}&confidence=40&overlap=30",
+            content=img_base64,
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
 
-    results = model(img, conf=0.4)
+    if rf_response.status_code != 200:
+        return JSONResponse(
+            content={"status": "error", "message": "Roboflow inference failed"},
+            status_code=500
+        )
 
-    detections = []
-    img_shape = list(img.shape)
-    for r in results:
-        for box in r.boxes:
-            cls = int(box.cls[0])
-            conf = float(box.conf[0])
-            x1, y1, x2, y2 = box.xyxy[0].tolist()
-            detections.append({
-                "cls": model.names[cls],
-                "confidence": round(conf, 3),
-                "bbox": [round(x1), round(y1), round(x2), round(y2)]
-            })
+    rf_data = rf_response.json()
+    predictions = rf_data.get("predictions", [])
+    img_width = rf_data.get("image", {}).get("width", 640)
+    img_height = rf_data.get("image", {}).get("height", 480)
 
-    if not detections:
+    if not predictions:
         return JSONResponse(content={
             "status": "no_detections",
             "message": "No origami symbols detected",
             "instructions": None
         })
 
+    # Convert Roboflow format to our format
+    detections = []
+    for pred in predictions:
+        x, y, w, h = pred["x"], pred["y"], pred["width"], pred["height"]
+        x1 = round(x - w / 2)
+        y1 = round(y - h / 2)
+        x2 = round(x + w / 2)
+        y2 = round(y + h / 2)
+        detections.append({
+            "cls": pred["class"],
+            "confidence": round(pred["confidence"], 3),
+            "bbox": [x1, y1, x2, y2]
+        })
+
+    img_shape = [img_height, img_width, 3]
+
+    # Call EC2 Claude wrapper
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(
             f"{EC2_URL}/instructions",
             json={"detections": detections, "image_shape": img_shape}
         )
-        print(f"EC2 status: {response.status_code}")
-        print(f"EC2 response text: '{response.text[:200]}'")
         if not response.text:
-            return JSONResponse(content={"status": "error", "message": "EC2 returned empty response"}, status_code=500)
+            return JSONResponse(
+                content={"status": "error", "message": "EC2 returned empty response"},
+                status_code=500
+            )
         result = response.json()
 
     return JSONResponse(content={

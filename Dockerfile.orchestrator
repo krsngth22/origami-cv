@@ -7,5 +7,5 @@ RUN pip install --no-cache-dir -r requirements_ec2.txt
 
 COPY backend/ ./backend/
 
-EXPOSE 8000
-CMD ["uvicorn", "backend.app.main_ec2:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8001
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8001"]
