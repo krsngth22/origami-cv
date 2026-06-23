@@ -3,19 +3,26 @@ import cv2
 import json
 import httpx
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from ultralytics import YOLO
 from dotenv import load_dotenv
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
 app = FastAPI(title="Origami CV Local API", version="1.0.0")
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -30,7 +37,21 @@ def health():
     return {"status": "healthy", "model_loaded": model is not None}
 
 @app.post("/analyze")
-async def analyze_diagram(file: UploadFile = File(...)):
+@limiter.limit("10/minute")
+async def analyze_diagram(request: Request, file: UploadFile = File(...)):
+    allowed_types = ["image/jpeg", "image/png", "image/webp", "image/bmp"]
+    if file.content_type not in allowed_types:
+        return JSONResponse(
+            content={"status": "error", "message": f"Invalid file type: {file.content_type}. Please upload an image."},
+            status_code=400
+        )
+    
+    if file.size and file.size > 10 * 1024 * 1024:
+        return JSONResponse(
+            content={"status": "error", "message": "File too large. Maximum size is 10MB."},
+            status_code=400
+        )
+
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
 

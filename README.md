@@ -209,6 +209,13 @@ interpolation. Undo works by replaying all previous folds instantly on a reset g
 then animating only the final unfold. Full shape-accurate simulation for arbitrary uploaded 
 diagrams is noted as future work.
 
+**3D fold animation (current limitation)**
+The Heart and Cicada tabs show fold animations using a stack-based geometry engine
+that replays all previous folds from flat on each step. The fold shapes are
+approximations — geometrically accurate origami simulation is planned for a future
+version. The Upload tab shows text instructions only; 3D animation for arbitrary
+uploaded diagrams is future work.
+
 ---
 
 ## Author

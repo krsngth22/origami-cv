@@ -2,7 +2,7 @@ import { useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-import { animateFold, resetGeometry, animateToStep } from "../utils/foldEngine";
+import { createGeometryWithRegions, animateFold, goToStep, resetGeometry } from "../utils/foldEngine";
 
 const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
   const frontRef = useRef();
@@ -11,8 +11,8 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
   const geoBackRef = useRef();
 
   useEffect(() => {
-    const geo = new THREE.PlaneGeometry(3, 3, 24, 24);
-    const geoBack = new THREE.PlaneGeometry(3, 3, 24, 24);
+    const geo = createGeometryWithRegions();
+    const geoBack = createGeometryWithRegions();
     geoRef.current = geo;
     geoBackRef.current = geoBack;
     if (frontRef.current) frontRef.current.geometry = geo;
@@ -20,21 +20,23 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
   }, []);
 
   useImperativeHandle(ref, () => ({
-    fold: (instruction, onComplete) => {
+    fold: (step, onComplete) => {
       if (!geoRef.current) return;
+      const fold = {
+        foldAxis: step.foldAxis,
+        foldPosition: step.foldPosition,
+        angle: step.angle,
+        movingSide: step.movingSide
+      };
       animateFold({
         geometry: geoRef.current,
-        foldAxis: instruction.foldAxis,
-        foldPosition: instruction.foldPosition,
-        angle: instruction.angle,
-        duration: instruction.duration,
+        fold,
+        duration: step.duration || 1.2,
         onComplete: () => {
           if (geoBackRef.current) {
             animateFold({
               geometry: geoBackRef.current,
-              foldAxis: instruction.foldAxis,
-              foldPosition: instruction.foldPosition,
-              angle: instruction.angle,
+              fold,
               duration: 0.01,
               onComplete
             });
@@ -44,17 +46,23 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
         }
       });
     },
-    goToStep: (steps, targetIndex, onComplete) => {
+    goToStep: (allSteps, targetIndex, onComplete) => {
       if (!geoRef.current || !geoBackRef.current) return;
-      animateToStep({
+      const allFolds = allSteps.map(s => ({
+        foldAxis: s.foldAxis,
+        foldPosition: s.foldPosition,
+        angle: s.angle,
+        movingSide: s.movingSide
+      }));
+      goToStep({
         geometry: geoRef.current,
-        steps,
+        allFolds,
         targetIndex,
         duration: 0.6,
         onComplete: () => {
-          animateToStep({
+          goToStep({
             geometry: geoBackRef.current,
-            steps,
+            allFolds,
             targetIndex,
             duration: 0.01,
             onComplete
@@ -63,15 +71,15 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
       });
     },
     reset: () => {
-      if (geoRef.current) resetGeometry(geoRef.current, 3);
-      if (geoBackRef.current) resetGeometry(geoBackRef.current, 3);
+      if (geoRef.current) resetGeometry(geoRef.current);
+      if (geoBackRef.current) resetGeometry(geoBackRef.current);
     }
   }));
 
   return (
     <group>
       <mesh ref={frontRef} castShadow receiveShadow>
-        <planeGeometry args={[3, 3, 24, 24]} />
+        <planeGeometry args={[3, 3, 48, 48]} />
         <meshStandardMaterial
           color={color}
           side={THREE.FrontSide}
@@ -80,7 +88,7 @@ const PaperMesh = forwardRef(function PaperMesh({ color = "#e63946" }, ref) {
         />
       </mesh>
       <mesh ref={backRef} castShadow receiveShadow>
-        <planeGeometry args={[3, 3, 24, 24]} />
+        <planeGeometry args={[3, 3, 48, 48]} />
         <meshStandardMaterial
           color="#f8f3e8"
           side={THREE.BackSide}

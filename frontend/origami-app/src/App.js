@@ -3,18 +3,18 @@ import PaperScene from "./components/PaperScene";
 import FoldControls from "./components/FoldControls";
 import ImageUpload from "./components/ImageUpload";
 import StepPanel from "./components/StepPanel";
-import { CRANE_STEPS, BOAT_STEPS } from "./utils/foldSequences";
+import { HEART_STEPS, CICADA_STEPS } from "./utils/foldSequences";
 import { analyzeImage } from "./api";
  
 const TABS = [
-  { id: "crane", label: "🦢 Crane" },
-  { id: "boat", label: "⛵ Boat" },
+  { id: "heart", label: "💗 Heart" },
+  { id: "cicada", label: "🦗 Cicada" },
   { id: "upload", label: "📤 Upload Diagram" }
 ];
  
 export default function App() {
   const [paperColor, setPaperColor] = useState("#e63946");
-  const [activeTab, setActiveTab] = useState("crane");
+  const [activeTab, setActiveTab] = useState("upload");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [instructions, setInstructions] = useState(null);
@@ -24,10 +24,10 @@ export default function App() {
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
   const paperRef = useRef();
  
-  const currentSteps = activeTab === "crane"
-    ? CRANE_STEPS
-    : activeTab === "boat"
-    ? BOAT_STEPS
+  const currentSteps = activeTab === "heart"
+    ? HEART_STEPS
+    : activeTab === "cicada"
+    ? CICADA_STEPS
     : null;
  
   const handleTabChange = useCallback((tabId) => {
@@ -79,7 +79,6 @@ export default function App() {
     const minLoadTime = new Promise(resolve => setTimeout(resolve, 3000));
     try {
       const [data] = await Promise.all([analyzeImage(file), minLoadTime]);
-      console.log("API response:", JSON.stringify(data));
       if (data.status === "no_detections") {
         setError("No origami symbols detected. Try a clearer diagram.");
       } else {
@@ -136,10 +135,12 @@ export default function App() {
           {activeTab !== "upload" && (
             <div className="mb-2">
               <h2 className="text-lg font-semibold text-white">
-                {activeTab === "crane" ? "🦢 Paper Crane" : "⛵ Paper Boat"}
+                {activeTab === "heart" ? "💗 Paper Heart" : "🦗 Origami Cicada"}
               </h2>
               <p className="text-xs text-gray-500">
-                {activeTab === "crane" ? "Classic 11-step origami crane" : "Classic 7-step origami boat"}
+                {activeTab === "heart"
+                  ? "Classic 11-step origami heart"
+                  : "Traditional 11-step origami cicada bug"}
               </p>
             </div>
           )}

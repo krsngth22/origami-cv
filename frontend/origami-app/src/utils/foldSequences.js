@@ -1,190 +1,231 @@
-const DEFAULT_CAMERA = { position: [0, 0.5, 5], target: [0, 0, 0] };
-const CLOSE_CAMERA = { position: [0, 0.3, 3.2], target: [0, 0, 0] };
-const HEAD_CAMERA = { position: [1.5, 1, 2.5], target: [0.8, 0.3, 0] };
-const WING_CAMERA = { position: [0, 1.5, 3.5], target: [0, 0, 0] };
+// Stack-based fold sequences with explicit movingSide.
+// movingSide: "positive" = vertices above/right of foldPosition move
+//             "negative" = vertices below/left of foldPosition move
+// foldAxis: "x" = fold line runs horizontally (y=foldPosition), moving side is up/down
+//           "y" = fold line runs vertically (x=foldPosition), moving side is left/right
 
-export const CRANE_STEPS = [
+export const HEART_STEPS = [
   {
     step: 1,
-    instruction: "Start with a square sheet colored side down. Fold in half diagonally to form a triangle.",
+    instruction: "Start with white side up. Fold in half vertically — left edge meets right edge. Crease well and unfold.",
     fold_type: "valley-fold",
-    foldAxis: "x",
+    foldAxis: "y",
     foldPosition: 0,
-    angle: Math.PI * 0.85,
-    duration: 1.2,
-    camera: DEFAULT_CAMERA
+    angle: Math.PI,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 2,
-    instruction: "Fold in half again to form a smaller triangle.",
+    instruction: "Fold in half horizontally — top edge meets bottom edge. Crease well and unfold.",
     fold_type: "valley-fold",
-    foldAxis: "y",
+    foldAxis: "x",
     foldPosition: 0,
-    angle: Math.PI * 0.85,
-    duration: 1.2,
-    camera: CLOSE_CAMERA
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.2
   },
   {
     step: 3,
-    instruction: "Open the top flap and squash fold to form a square.",
+    instruction: "Fold the bottom half upward to the horizontal center crease.",
     fold_type: "valley-fold",
     foldAxis: "x",
-    foldPosition: 0.1,
-    angle: -Math.PI * 0.75,
-    duration: 1.4,
-    camera: CLOSE_CAMERA
+    foldPosition: 0,
+    angle: Math.PI,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 4,
-    instruction: "Fold the left and right edges to the center crease.",
-    fold_type: "valley-fold",
+    instruction: "Turn the paper over.",
+    fold_type: "turn-over",
     foldAxis: "y",
-    foldPosition: 0.25,
-    angle: Math.PI * 0.65,
-    duration: 1.2,
-    camera: CLOSE_CAMERA
+    foldPosition: 0,
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.0
   },
   {
     step: 5,
-    instruction: "Fold the top point down to the bottom.",
+    instruction: "Fold the bottom-left corner diagonally upward to meet the vertical center crease.",
     fold_type: "valley-fold",
-    foldAxis: "x",
-    foldPosition: 0.35,
+    foldAxis: "y",
+    foldPosition: -0.75,
     angle: Math.PI * 0.75,
-    duration: 1.0,
-    camera: CLOSE_CAMERA
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 6,
-    instruction: "Unfold the flaps from steps 4 and 5 back out.",
-    fold_type: "fold-unfold",
+    instruction: "Fold the bottom-right corner diagonally upward to meet the vertical center crease.",
+    fold_type: "valley-fold",
     foldAxis: "y",
-    foldPosition: 0.25,
-    angle: -Math.PI * 0.65,
-    duration: 1.0,
-    camera: DEFAULT_CAMERA
+    foldPosition: 0.75,
+    angle: -Math.PI * 0.75,
+    movingSide: "positive",
+    duration: 1.2
   },
   {
     step: 7,
-    instruction: "Lift the bottom corner upward, reverse folding along the creases.",
+    instruction: "Turn the paper over. Fold the top-left edge diagonally downward to the center crease.",
     fold_type: "valley-fold",
-    foldAxis: "x",
-    foldPosition: -0.35,
-    angle: Math.PI * 0.75,
-    duration: 1.4,
-    camera: DEFAULT_CAMERA
+    foldAxis: "y",
+    foldPosition: -0.5,
+    angle: Math.PI * 0.65,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 8,
-    instruction: "Repeat steps 3 to 7 on the other side.",
-    fold_type: "valley-fold",
-    foldAxis: "y",
-    foldPosition: -0.3,
-    angle: Math.PI * 0.35,
-    duration: 1.2,
-    camera: DEFAULT_CAMERA
-  },
-  {
-    step: 9,
-    instruction: "Fold both bottom flaps upward along the center line.",
-    fold_type: "valley-fold",
-    foldAxis: "x",
-    foldPosition: 0.15,
-    angle: Math.PI * 0.4,
-    duration: 1.2,
-    camera: DEFAULT_CAMERA
-  },
-  {
-    step: 10,
-    instruction: "Inside reverse fold one tip downward to form the crane's head.",
-    fold_type: "push-in",
-    foldAxis: "y",
-    foldPosition: 0.6,
-    angle: -Math.PI * 0.18,
-    duration: 1.4,
-    camera: HEAD_CAMERA
-  },
-  {
-    step: 11,
-    instruction: "Gently pull the wings apart and press the bottom to open the body. Your crane is complete!",
-    fold_type: "valley-fold",
-    foldAxis: "x",
-    foldPosition: 0,
-    angle: -Math.PI * 0.12,
-    duration: 1.6,
-    camera: WING_CAMERA
-  }
-];
-
-export const BOAT_STEPS = [
-  {
-    step: 1,
-    instruction: "Start with a rectangle, white side up. Fold in half horizontally (top to bottom).",
-    fold_type: "valley-fold",
-    foldAxis: "x",
-    foldPosition: 0,
-    angle: Math.PI,
-    duration: 1.2,
-    camera: DEFAULT_CAMERA
-  },
-  {
-    step: 2,
-    instruction: "Fold the top-left and top-right corners down to meet at the center of the bottom edge.",
+    instruction: "Fold the top-right edge diagonally downward to the center crease.",
     fold_type: "valley-fold",
     foldAxis: "y",
     foldPosition: 0.5,
+    angle: -Math.PI * 0.65,
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 9,
+    instruction: "Fold the top flap downward along the horizontal center crease.",
+    fold_type: "valley-fold",
+    foldAxis: "x",
+    foldPosition: 0.5,
+    angle: Math.PI * 0.85,
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 10,
+    instruction: "Fold the top-left and top-right corners downward to round the top of the heart.",
+    fold_type: "valley-fold",
+    foldAxis: "x",
+    foldPosition: 0.6,
     angle: Math.PI * 0.5,
-    duration: 1.2,
-    camera: CLOSE_CAMERA
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 11,
+    instruction: "Turn the model over. Your origami heart is complete!",
+    fold_type: "turn-over",
+    foldAxis: "y",
+    foldPosition: 0,
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.0
+  }
+];
+
+export const CICADA_STEPS = [
+  {
+    step: 1,
+    instruction: "Start with colored side up. Fold top point down to bottom point to form a triangle.",
+    fold_type: "valley-fold",
+    foldAxis: "x",
+    foldPosition: 0,
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 2,
+    instruction: "Fold the top-right point diagonally down to the bottom point.",
+    fold_type: "valley-fold",
+    foldAxis: "y",
+    foldPosition: 0.5,
+    angle: Math.PI * 0.85,
+    movingSide: "positive",
+    duration: 1.2
   },
   {
     step: 3,
-    instruction: "Fold the front bottom strip upward over the triangle base.",
+    instruction: "Fold the top-left point diagonally down to the bottom point.",
     fold_type: "valley-fold",
-    foldAxis: "x",
+    foldAxis: "y",
     foldPosition: -0.5,
-    angle: Math.PI,
-    duration: 1.2,
-    camera: CLOSE_CAMERA
+    angle: -Math.PI * 0.85,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 4,
-    instruction: "Flip the model over and fold the remaining bottom strip up to match.",
-    fold_type: "turn-over",
+    instruction: "Fold both bottom flaps upward to form the wings. Angle slightly outward.",
+    fold_type: "valley-fold",
     foldAxis: "x",
-    foldPosition: -0.5,
-    angle: Math.PI,
-    duration: 1.2,
-    camera: DEFAULT_CAMERA
+    foldPosition: -0.3,
+    angle: -Math.PI * 0.85,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 5,
-    instruction: "Open the pocket from the bottom and flatten the model into a diamond shape.",
-    fold_type: "fold-unfold",
-    foldAxis: "y",
-    foldPosition: 0,
-    angle: Math.PI * 0.25,
-    duration: 1.4,
-    camera: DEFAULT_CAMERA
+    instruction: "Fold one layer from the bottom upward, leaving a small gap below the wings.",
+    fold_type: "valley-fold",
+    foldAxis: "x",
+    foldPosition: -0.6,
+    angle: Math.PI * 0.75,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 6,
-    instruction: "Fold the bottom point of the diamond up to the top point, on both the front and back layers.",
+    instruction: "Fold the bottom point upward again, leaving a gap — creates body segments.",
     fold_type: "valley-fold",
     foldAxis: "x",
-    foldPosition: -0.25,
-    angle: Math.PI * 0.55,
-    duration: 1.2,
-    camera: CLOSE_CAMERA
+    foldPosition: -0.45,
+    angle: Math.PI * 0.6,
+    movingSide: "negative",
+    duration: 1.2
   },
   {
     step: 7,
-    instruction: "Hold the two side points and gently pull apart while pressing the bottom flat — this opens the boat's hull.",
-    fold_type: "fold-unfold",
-    foldAxis: "x",
+    instruction: "Flip the model over to the other side.",
+    fold_type: "turn-over",
+    foldAxis: "y",
     foldPosition: 0,
-    angle: -Math.PI * 0.2,
-    duration: 1.6,
-    camera: WING_CAMERA
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.0
+  },
+  {
+    step: 8,
+    instruction: "Fold the left edge inward to meet the center of the paper.",
+    fold_type: "valley-fold",
+    foldAxis: "y",
+    foldPosition: -0.6,
+    angle: Math.PI * 0.9,
+    movingSide: "negative",
+    duration: 1.2
+  },
+  {
+    step: 9,
+    instruction: "Fold the right edge inward to meet the center, slightly overlapping.",
+    fold_type: "valley-fold",
+    foldAxis: "y",
+    foldPosition: 0.6,
+    angle: -Math.PI * 0.9,
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 10,
+    instruction: "Fold the top point slightly downward to form the cicada's head.",
+    fold_type: "valley-fold",
+    foldAxis: "x",
+    foldPosition: 0.7,
+    angle: Math.PI * 0.45,
+    movingSide: "positive",
+    duration: 1.2
+  },
+  {
+    step: 11,
+    instruction: "Flip the paper over. Your origami cicada is complete! Add eyes to finish.",
+    fold_type: "turn-over",
+    foldAxis: "y",
+    foldPosition: 0,
+    angle: Math.PI,
+    movingSide: "positive",
+    duration: 1.0
   }
 ];
