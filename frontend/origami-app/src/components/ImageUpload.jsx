@@ -12,15 +12,21 @@ export default function ImageUpload({ onUpload, isLoading }) {
   const [preview, setPreview] = useState(null);
   const [fileError, setFileError] = useState(null);
   const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
+  const [loadingProgress, setLoadingProgress] = useState(15);
   const inputRef = useRef();
 
   useEffect(() => {
     if (!isLoading) {
       setLoadingMsgIndex(0);
+      setLoadingProgress(15);
       return;
     }
+    const steps = [15, 30, 45, 60, 75, 85, 92];
+    let i = 0;
     const interval = setInterval(() => {
-      setLoadingMsgIndex(i => (i + 1) % LOADING_MESSAGES.length);
+      i = Math.min(i + 1, steps.length - 1);
+      setLoadingProgress(steps[i]);
+      setLoadingMsgIndex(prev => (prev + 1) % LOADING_MESSAGES.length);
     }, 1800);
     return () => clearInterval(interval);
   }, [isLoading]);
@@ -92,7 +98,10 @@ export default function ImageUpload({ onUpload, isLoading }) {
             {LOADING_MESSAGES[loadingMsgIndex]}
           </p>
           <div className="w-full h-1 bg-blue-900/40 rounded-full mt-2 overflow-hidden">
-            <div className="h-full bg-blue-400 rounded-full animate-pulse" style={{ width: "70%" }} />
+            <div
+              className="h-full bg-blue-400 rounded-full transition-all duration-1000"
+              style={{ width: `${loadingProgress}%` }}
+            />
           </div>
         </div>
       )}

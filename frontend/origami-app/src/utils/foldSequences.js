@@ -30,7 +30,7 @@ export const CRANE_STEPS = [
     fold_type: "valley-fold",
     foldAxis: "x",
     foldPosition: 0.1,
-    angle: -Math.PI * 0.4,
+    angle: -Math.PI * 0.75,
     duration: 1.4,
     camera: CLOSE_CAMERA
   },
@@ -39,8 +39,8 @@ export const CRANE_STEPS = [
     instruction: "Fold the left and right edges to the center crease.",
     fold_type: "valley-fold",
     foldAxis: "y",
-    foldPosition: 0.3,
-    angle: Math.PI * 0.35,
+    foldPosition: 0.25,
+    angle: Math.PI * 0.65,
     duration: 1.2,
     camera: CLOSE_CAMERA
   },
@@ -49,8 +49,8 @@ export const CRANE_STEPS = [
     instruction: "Fold the top point down to the bottom.",
     fold_type: "valley-fold",
     foldAxis: "x",
-    foldPosition: 0.4,
-    angle: Math.PI * 0.45,
+    foldPosition: 0.35,
+    angle: Math.PI * 0.75,
     duration: 1.0,
     camera: CLOSE_CAMERA
   },
@@ -59,8 +59,8 @@ export const CRANE_STEPS = [
     instruction: "Unfold the flaps from steps 4 and 5 back out.",
     fold_type: "fold-unfold",
     foldAxis: "y",
-    foldPosition: 0.3,
-    angle: -Math.PI * 0.35,
+    foldPosition: 0.25,
+    angle: -Math.PI * 0.65,
     duration: 1.0,
     camera: DEFAULT_CAMERA
   },
@@ -69,8 +69,8 @@ export const CRANE_STEPS = [
     instruction: "Lift the bottom corner upward, reverse folding along the creases.",
     fold_type: "valley-fold",
     foldAxis: "x",
-    foldPosition: -0.2,
-    angle: Math.PI * 0.45,
+    foldPosition: -0.35,
+    angle: Math.PI * 0.75,
     duration: 1.4,
     camera: DEFAULT_CAMERA
   },

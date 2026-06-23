@@ -5,13 +5,13 @@ import ImageUpload from "./components/ImageUpload";
 import StepPanel from "./components/StepPanel";
 import { CRANE_STEPS, BOAT_STEPS } from "./utils/foldSequences";
 import { analyzeImage } from "./api";
-
+ 
 const TABS = [
   { id: "crane", label: "🦢 Crane" },
   { id: "boat", label: "⛵ Boat" },
   { id: "upload", label: "📤 Upload Diagram" }
 ];
-
+ 
 export default function App() {
   const [paperColor, setPaperColor] = useState("#e63946");
   const [activeTab, setActiveTab] = useState("crane");
@@ -21,16 +21,15 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadStepIndex, setUploadStepIndex] = useState(0);
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
   const paperRef = useRef();
-
+ 
   const currentSteps = activeTab === "crane"
     ? CRANE_STEPS
     : activeTab === "boat"
     ? BOAT_STEPS
     : null;
-
-  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
-
+ 
   const handleTabChange = useCallback((tabId) => {
     if (tabId === activeTab) return;
     setIsTabTransitioning(true);
@@ -44,7 +43,7 @@ export default function App() {
       setIsTabTransitioning(false);
     }, 200);
   }, [activeTab]);
-
+ 
   const handleNext = useCallback(() => {
     if (!currentSteps || isAnimating) return;
     const step = currentSteps[currentIndex];
@@ -55,7 +54,7 @@ export default function App() {
       setCurrentIndex(i => Math.min(i + 1, currentSteps.length - 1));
     });
   }, [currentSteps, currentIndex, isAnimating]);
-
+ 
   const handleUndo = useCallback(() => {
     if (currentIndex === 0 || isAnimating) return;
     const newIndex = currentIndex - 1;
@@ -65,20 +64,22 @@ export default function App() {
       setCurrentIndex(newIndex);
     });
   }, [currentIndex, isAnimating, currentSteps]);
-
+ 
   const handleReset = useCallback(() => {
     setCurrentIndex(0);
     setIsAnimating(false);
     if (paperRef.current) paperRef.current.reset();
   }, []);
-
+ 
   const handleUpload = async (file) => {
     setUploadStepIndex(0);
     setIsLoading(true);
     setError(null);
     setInstructions(null);
+    const minLoadTime = new Promise(resolve => setTimeout(resolve, 3000));
     try {
-      const data = await analyzeImage(file);
+      const [data] = await Promise.all([analyzeImage(file), minLoadTime]);
+      console.log("API response:", JSON.stringify(data));
       if (data.status === "no_detections") {
         setError("No origami symbols detected. Try a clearer diagram.");
       } else {
@@ -90,11 +91,11 @@ export default function App() {
       setIsLoading(false);
     }
   };
-
+ 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {activeTab !== "upload" && (
-        <div className="flex items-center gap-2 ml-4">
+        <div className="flex items-center gap-2 px-6 pt-3">
           <span className="text-xs text-gray-400">Paper color</span>
           <input
             type="color"
@@ -107,7 +108,7 @@ export default function App() {
           />
         </div>
       )}
-      
+ 
       <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">Origami CV</h1>
@@ -129,7 +130,7 @@ export default function App() {
           ))}
         </div>
       </header>
-
+ 
       <main className="flex flex-col md:flex-row h-[calc(100vh-73px)]">
         <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto max-h-[45vh] md:max-h-full">
           {activeTab !== "upload" && (
@@ -142,10 +143,10 @@ export default function App() {
               </p>
             </div>
           )}
+ 
           {activeTab === "upload" ? (
             <>
               <ImageUpload onUpload={handleUpload} isLoading={isLoading} />
-              
               {instructions && (
                 <div className="bg-yellow-900/20 border border-yellow-700/40 rounded-lg p-3">
                   <p className="text-yellow-300 text-xs">
@@ -158,7 +159,7 @@ export default function App() {
                 currentStepIndex={uploadStepIndex}
                 onStepChange={setUploadStepIndex}
                 isAnimating={false}
-                error={null}
+                error={error}
               />
             </>
           ) : (
@@ -172,12 +173,11 @@ export default function App() {
             />
           )}
         </div>
-
+ 
         <div className={`flex-1 min-h-[55vh] md:min-h-0 transition-opacity duration-200 ${isTabTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           <PaperScene
             paperRef={paperRef}
             paperColor={paperColor}
-            cameraTarget={currentSteps?.[currentIndex]?.camera}
             isAnimating={isAnimating}
           />
         </div>
