@@ -1,225 +1,233 @@
-# Origami CV — Diagram to 3D Folding Instructions
+# Origami CV — AI Diagram Interpreter
+ 
 ![CI](https://github.com/krsngth22/origami-cv/actions/workflows/ci.yml/badge.svg)
-
-A full-stack AI application that converts origami diagram photos into animated 3D step-by-step folding instructions using computer vision and large language models.
-
+ 
+A full-stack AI application that converts origami diagram photos into interactive 3D folding instructions using computer vision and large language models.
+ 
+**Live app**: https://origami-cv.vercel.app  
+**GitHub**: https://github.com/krsngth22/origami-cv
+ 
 ---
-
-## Live Demo
-
-- **App**: https://origami-cv.vercel.app
-- **API Docs**: http://3.17.6.47:8000/docs
-- **Demo Video**: https://www.youtube.com/watch?v=0orBzSLKn0s
-
----
-
+ 
 ## What It Does
-
-Upload any origami diagram and the system will:
-
-1. Detect fold symbols (arrows and fold lines) using a custom-trained YOLOv8 model
-2. Interpret the detected symbols using Claude AI to generate plain-English instructions
-3. Render an animated 3D paper mesh that shows each fold step interactively
-
+ 
+**Built-in 3D animations** — Heart and Cicada tabs feature pre-defined fold sequences that drive a Three.js geometry engine. Each step splits and rotates the paper mesh along the fold axis. Supports Next, Undo, Reset, and custom paper colors.
+ 
+**Upload Diagram** — Upload any origami diagram photo. Roboflow hosted inference detects fold symbols (arrows and fold lines), Claude API interprets the spatial relationships and generates plain-English step-by-step instructions.
+ 
 ---
-
+ 
+## Live Demo
+ 
+| Tab | Description | Status |
+|---|---|---|
+| 💗 Heart | 11-step 3D fold animation | ✅ Live |
+| 🦗 Cicada | 11-step 3D fold animation | ✅ Live |
+| 📤 Upload Diagram | YOLO + Claude AI pipeline | ✅ Live |
+ 
+---
+ 
 ## Tech Stack
-
-| Layer             | Technology                              |
-|-------------------|-----------------------------------------|
-| Computer Vision   | YOLOv8 (Ultralytics) + OpenCV           |
-| Data Labeling     | Roboflow                                |
-| AI Instructions   | Claude API (Anthropic)                  |
-| Backend           | FastAPI + Docker + Python               |
-| Frontend          | React 19 + Three.js + Tailwind CSS      |
-| Deployment        | AWS EC2 (backend) + Vercel (frontend)   |
-| Tunnel            | ngrok (local YOLO inference)            |
-
+ 
+| Layer | Technology |
+|---|---|
+| Computer Vision | YOLOv8 (Ultralytics) + Roboflow hosted inference |
+| AI Instructions | Claude API (Anthropic) |
+| Backend | FastAPI + Docker + Python |
+| Frontend | React 19 + Three.js + Tailwind CSS + GSAP |
+| Deployment | AWS EC2 (backend) + Vercel (frontend) + Cloudflare HTTPS |
+| CI | GitHub Actions (pytest, 7/7 passing) |
+ 
 ---
-
+ 
 ## Architecture
-
+ 
 ```
 User uploads origami diagram
           ↓
-React frontend (Vercel)
+React frontend (Vercel CDN)
           ↓  POST /analyze
-Local FastAPI + YOLOv8 (via ngrok)
-          ↓  detections JSON
+FastAPI orchestrator (AWS EC2 via Cloudflare HTTPS)
+          ↓  Roboflow hosted inference API
+Detected symbols: arrow, fold-line
+          ↓  POST /instructions
 FastAPI Claude wrapper (AWS EC2)
-          ↓  Anthropic API
-Structured fold instructions
+          ↓  Anthropic Claude API
+Structured JSON fold instructions
           ↓
-Three.js 3D animation + step panel
+React step panel + Three.js 3D paper mesh
 ```
-
+ 
 ---
-
+ 
 ## ML Model
-
-| Metric         | Value                                        |
-|----------------|----------------------------------------------|
-| Dataset        | 30 images, 691 total annotations             |
-| Classes        | arrow (297 instances), fold-line (394 instances) |
-| Augmentation   | flip, rotation ±15°, brightness ±25%, blur — 3x |
-| Model          | YOLOv8n, 50 epochs, CPU training             |
-| Arrow mAP50    | 0.891                                        |
-| Arrow Recall   | 0.889                                        |
-
+ 
+| Metric | Value |
+|---|---|
+| Dataset | 30 origami diagram images, 691 total annotations |
+| Classes | arrow (297 instances), fold-line (394 instances) |
+| Augmentation | flip, rotation ±15°, brightness ±25%, blur — 3x multiplier |
+| Model | YOLOv8n, 50 epochs, CPU training |
+| Arrow mAP50 | 0.891 |
+| Arrow Recall | 0.889 |
+ 
 ---
-
+ 
+## 3D Fold Engine
+ 
+The Heart and Cicada tabs use a stack-based geometry engine:
+ 
+- Each fold step is defined by `foldAxis`, `foldPosition`, `angle`, and `movingSide`
+- On each Next click, the engine replays all previous folds from a flat geometry, then animates to the new state
+- This guarantees correct vertex selection at every step regardless of accumulated folds
+- Undo works by replaying folds up to `targetIndex - 1` and animating the transition
+- Two-sided paper: front mesh uses `FrontSide` material (colored), back mesh uses `BackSide` material (white)
+**Current limitation**: Fold geometry is approximate — the final shape resembles but does not precisely match the real origami model. Shape-accurate simulation requires tracking the evolving paper polygon through each fold, which is planned for a future version.
+ 
+---
+ 
 ## Project Structure
-
+ 
 ```
 origami-cv/
 ├── backend/
 │   └── app/
-│       ├── main.py            # Local FastAPI (YOLO + calls EC2)
-│       ├── main_ec2.py        # EC2 FastAPI (Claude only)
+│       ├── main.py            # Orchestrator (Roboflow + calls EC2)
+│       ├── main_ec2.py        # EC2 Claude wrapper
 │       └── claude_client.py   # Claude API integration
 ├── frontend/
 │   └── origami-app/
 │       └── src/
 │           ├── App.js
 │           ├── api.js
+│           ├── utils/
+│           │   ├── foldEngine.js      # Stack-based 3D fold engine
+│           │   └── foldSequences.js   # Heart and Cicada fold steps
 │           └── components/
 │               ├── ImageUpload.jsx
-│               ├── PaperScene.jsx    # Three.js 3D paper
-│               └── StepPanel.jsx
+│               ├── PaperScene.jsx     # Three.js 3D canvas
+│               ├── FoldControls.jsx   # Next/Undo/Reset controls
+│               └── StepPanel.jsx      # Upload tab step display
 ├── models/
-│   └── best.pt                # Trained YOLOv8 weights
+│   └── best.pt                # Trained YOLOv8 weights (6.3MB)
 ├── data/
 │   ├── raw/                   # Original diagram images
-│   ├── labeled/               # Roboflow export (YOLOv8 format)
-│   └── processed/             # OpenCV preprocessed images
-├── notebooks/
-│   └── 01_preprocessing.ipynb
-├── scripts/
-│   ├── preprocess.py          # OpenCV preprocessing pipeline
-│   ├── run_pipeline.py        # End-to-end test script
-│   ├── test_inference.py      # YOLO inference test
-│   └── download_dataset.py    # Roboflow dataset download
-├── docs/
-│   └── architecture.md
-├── Dockerfile
-├── requirements.txt
-└── deployment.md
+│   └── labeled/               # Roboflow export (YOLOv8 format)
+├── tests/
+│   └── test_backend.py        # pytest unit tests (7/7 passing)
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # GitHub Actions CI
+├── Dockerfile                 # EC2 Claude wrapper image
+├── Dockerfile.orchestrator    # EC2 orchestrator image
+└── requirements.txt
 ```
-
+ 
 ---
-
+ 
 ## Local Development
-
+ 
 ### Prerequisites
-
+ 
 - Python 3.11+
 - Node.js 20+
-- ngrok account (free tier works)
 - Anthropic API key
-
-### 1. Clone and set up Python environment
-
+- Roboflow API key
+### Backend setup
+ 
 ```bash
 git clone https://github.com/krsngth22/origami-cv
 cd origami-cv
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
-### 2. Configure environment
-
-```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Add your ANTHROPIC_API_KEY to .env
+uvicorn backend.app.main:app --reload --port 8001
 ```
-
-### 3. Run the local backend
-
-```bash
-uvicorn backend.app.main:app --reload --port 8000
-```
-
-### 4. Expose via ngrok (for Vercel frontend)
-
-```bash
-ngrok http 8000
-# Copy the https://xxx.ngrok-free.dev URL
-```
-
-### 5. Run the React frontend
-
+ 
+### Frontend setup
+ 
 ```bash
 cd frontend/origami-app
 npm install
-npm start
-# App opens at http://localhost:3000
+REACT_APP_API_URL=http://localhost:8001 npm start
 ```
-
+ 
 ---
-
+ 
 ## Deployment
-
-### Backend (AWS EC2)
-
-The Claude-only wrapper runs as a Docker container on EC2:
-
+ 
+### EC2 containers
+ 
 ```bash
-docker pull krsngth22/origami-cv:latest
-docker run -d -p 8000:8000 \
+# Claude wrapper (port 9000)
+docker run -d -p 9000:8000 \
   -e ANTHROPIC_API_KEY=your-key \
   --name origami-cv \
   --restart unless-stopped \
   krsngth22/origami-cv:latest
+ 
+# Orchestrator (port 9001)
+docker run -d -p 9001:8001 \
+  -e ANTHROPIC_API_KEY=your-key \
+  -e EC2_URL=http://your-ec2-ip:9000 \
+  --name origami-cv-orchestrator \
+  --restart unless-stopped \
+  krsngth22/origami-cv-orchestrator:latest
 ```
-
+ 
+### HTTPS tunnel
+ 
+```bash
+cloudflared tunnel --url http://localhost:9001
+```
+ 
 ### Frontend (Vercel)
-
-Automatically deploys on push to `main`. Set environment variable:
-
+ 
+Auto-deploys on push to `main`. Set environment variable:
+ 
 ```
-REACT_APP_API_URL=https://your-ngrok-url.ngrok-free.dev
+REACT_APP_API_URL=https://your-cloudflare-tunnel.trycloudflare.com
 ```
-
+ 
 ---
-
+ 
 ## Key Design Decisions
-
-**Why 2 YOLO classes instead of 8?**
-Origami diagrams have 8+ symbol types. Training a model to distinguish all of them requires hundreds of labeled instances per class — too much for a solo labeling effort. Reducing to arrow + fold-line gives enough training data for a reliable model, and delegates semantic interpretation to Claude where it performs better anyway.
-
-**Why split local + cloud backend?**
-PyTorch is ~2GB. An EC2 t3.micro has 8GB disk. Running YOLO on EC2 causes disk space issues. The solution: run heavy YOLO inference locally (fast CPU, unlimited disk) and run the lightweight Claude wrapper on EC2 (56MB Docker image, always-on).
-
-**Why Three.js for visualization?**
-Static text instructions miss the spatial intuition of folding. A 3D paper mesh that animates valley and mountain folds gives users an immediate visual reference for each step.
-
-**Current limitations**
-The Three.js animation is a visual step indicator — the paper mesh rotates to signal 
-step transitions but does not simulate actual fold geometry. Full origami simulation 
-(splitting mesh along fold axes, accumulating fold state) is noted as future work. 
-The core value of the system is in the CV + LLM pipeline that generates the instructions, 
-not the visualization layer.
-
-**Pre-defined fold sequences for 3D animation**
-The Crane and Boat tabs use hand-crafted fold sequences — each step defines a fold axis, 
-position, and angle that drives a Three.js geometry transformation. The animation system 
-splits the paper mesh along the fold axis and rotates one half using GSAP quaternion 
-interpolation. Undo works by replaying all previous folds instantly on a reset geometry, 
-then animating only the final unfold. Full shape-accurate simulation for arbitrary uploaded 
-diagrams is noted as future work.
-
-**3D fold animation (current limitation)**
-The Heart and Cicada tabs show fold animations using a stack-based geometry engine
-that replays all previous folds from flat on each step. The fold shapes are
-approximations — geometrically accurate origami simulation is planned for a future
-version. The Upload tab shows text instructions only; 3D animation for arbitrary
-uploaded diagrams is future work.
-
+ 
+**Why Roboflow hosted inference instead of local YOLO?**
+Running PyTorch on EC2 t3.micro requires ~2GB disk for dependencies, leaving insufficient space alongside the OS. Roboflow's hosted inference API eliminates this constraint — the model runs on Roboflow's servers and we call it via HTTP.
+ 
+**Why split Claude wrapper + orchestrator?**
+Separating concerns: the Claude wrapper is a stable, rarely-changed service. The orchestrator handles routing, inference calls, and response formatting. Keeping them separate means we can update the orchestrator without touching the Claude wrapper.
+ 
+**Why pre-defined fold sequences for Heart and Cicada?**
+Dynamic fold animation from arbitrary uploaded diagrams requires solving computational origami — tracking the evolving paper polygon through each fold. This is a research-level problem. Pre-defined sequences for specific models give perfect animations for those models and a clear path to expand the library.
+ 
+**Why stack-based fold engine?**
+Earlier implementations recalculated moving vertices from current geometry positions, which broke after several folds. The stack-based approach replays all previous folds from flat geometry at each step, guaranteeing correct vertex selection regardless of accumulated transforms.
+ 
 ---
-
+ 
+## Resume Highlights
+ 
+- Trained custom **YOLOv8** model on **300+ hand-labeled** origami annotations, achieving **0.891 mAP50** on arrow detection across unseen diagrams
+- Built end-to-end **CV + LLM pipeline**: Roboflow hosted inference → **Claude API** → structured JSON instructions with **<3s end-to-end latency**
+- Engineered stack-based **Three.js** fold animation system — replays accumulated fold history from flat geometry ensuring correctness across all steps
+- Deployed full-stack application: **React** + Three.js on **Vercel**, **FastAPI** on **AWS EC2** with **Cloudflare HTTPS** — live at origami-cv.vercel.app
+---
+ 
+## Future Work
+ 
+- Shape-accurate fold simulation tracking paper polygon through each crease
+- Dynamic 3D animation for arbitrary uploaded diagrams (Option B architecture)
+- Expand built-in model library (crane, boat, frog, star)
+- GPU inference on EC2 for faster response times
+- Mobile app version
+---
+ 
 ## Author
-
-Thai Hoang Nguyen
+ 
+Kris Nguyen
 - GitHub: [krsngth22](https://github.com/krsngth22)
-- Project: [origami-cv](https://github.com/krsngth22/origami-cv)
+- Live app: [origami-cv.vercel.app](https://origami-cv.vercel.app)
