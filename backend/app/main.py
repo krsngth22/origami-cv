@@ -26,7 +26,7 @@ app.add_middleware(
 )
 
 ROBOFLOW_API_KEY = os.getenv("ROBOFLOW_API_KEY", "y8CqklhaGLS0Ao0RTtXc")
-ROBOFLOW_URL = "https://detect.roboflow.com/origami-symbols/1"
+ROBOFLOW_URL = "https://detect.roboflow.com/kriss-workspace-0pkoe/origami-symbols-1-yolov8n-t1"
 EC2_URL = os.getenv("EC2_URL", "http://3.17.6.47:8000")
 
 @app.get("/health")
